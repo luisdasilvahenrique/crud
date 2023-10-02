@@ -6,63 +6,37 @@ const prisma = new PrismaClient();
 
 app.use(express.json());
 
-//route for list all of items
-app.get("/items", async (request, response) => {
-  const items = await prisma.item.findMany();
-  response.json(items);
-});
+//  list all Products
+app.get("/products", async(req, res) => {
+  const products = await prisma.product.findMany();
+  res.json(products);
+})
 
-//route for create a new item
-app.post("/items", async (request, response) => {
-  const { name, price } = request.body;
-  const newItem = await prisma.item.create({
+app.post("/product", async(req, res) => {
+  const { name, price } = req.body;
+  const products = await prisma.product.create({
     data: {
       name,
-      price,
-    },
-  });
-  response.json(newItem);
-});
+      price: parseFloat(price),
+    }
+  })
+  res.json(products)
+})
 
-//route for obtain a item by id
-app.get("/items/:id", async (request, response) => {
-  const { id } = request.params;
-  const item = await prisma.item.findUnique({
+app.delete("/product/:id", async(req, res) => {
+  const {id} = req.params;
+  const products = await prisma.product.delete({
     where: {
-      id: Number(id),
-    },
-  });
-  if (!item) {
-    return response.status(400).json({ message: "Item not found" });
+      id: parseInt(id)
+    }
+  })
+  if(!products) {
+    return res.status(404).json({message: "Product not found"})
+  } else {
+    return res.json({ message: "Product deleted" })
   }
-});
+})
 
-//route for update a item by id
-app.put("items/:id", async (request, response) => {
-  const { id } = request.params;
-  const { name, price } = request.body;
-  const item = await prisma.item.update({
-    where: {
-      id: Number(id),
-    },
-    data: {
-      name,
-      price,
-    },
-  });
-  response.json(item);
-});
-
-//route for delete a item by id
-app.delete("/items/:id", async (request, response) => {
-  const { id } = request.params;
-  await prisma.item.delete({
-    where: {
-      id: Number(id),
-    },
-  });
-  response.json({ message: "Item deleted" });
-});
 
 const PORT = process.env.PORT || 3000;
 
